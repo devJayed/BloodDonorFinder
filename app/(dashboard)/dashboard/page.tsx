@@ -1,16 +1,41 @@
 "use client"
 
 import { useSession } from "next-auth/react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Users, UserPlus, Search, Shield } from "lucide-react"
+import { CheckCircle2, Users, UserPlus, Search, Shield } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
 import { canAccessAdmin, canManageDonors } from "@/lib/permissions"
-import type { UserRole } from "@/lib/types"
+import type { Donor, UserRole } from "@/lib/types"
 
 export default function DashboardPage() {
   const { data: session } = useSession()
   const userRole = session?.user?.role as UserRole | undefined
+  const [myDonor, setMyDonor] = useState<Donor | null>(null)
+  const [completionPercentage, setCompletionPercentage] = useState(0)
+  const isAdmin = canManageDonors(userRole ?? null)
+
+  useEffect(() => {
+    if (!session?.user || isAdmin) return
+
+    const fetchMyDonorProfile = async () => {
+      try {
+        const res = await fetch("/api/donors/me")
+        const data = await res.json()
+
+        if (res.ok) {
+          setMyDonor(data.donor)
+          setCompletionPercentage(data.completionPercentage || 0)
+        }
+      } catch (error) {
+        console.error("Failed to fetch donor profile:", error)
+      }
+    }
+
+    fetchMyDonorProfile()
+  }, [isAdmin, session?.user])
 
   const quickActions = [
     {
@@ -22,10 +47,18 @@ export default function DashboardPage() {
     },
     {
       title: "My Profile",
-      description: "View or update your donor profile",
+      description: "View or update your account profile",
       icon: Users,
       href: "/dashboard/profile",
       color: "bg-green-500/10 text-green-600",
+    },
+    {
+      title: "My Donor Profile",
+      description: "Create or update your own donor profile",
+      icon: UserPlus,
+      href: "/dashboard/add-donor",
+      color: "bg-purple-500/10 text-purple-600",
+      roles: ["USER"] as UserRole[],
     },
     {
       title: "Add Donor",
@@ -36,6 +69,9 @@ export default function DashboardPage() {
       roles: ["ADMIN", "SUPER_ADMIN"] as UserRole[],
     },
   ].filter((action) => !action.roles || action.roles.includes(userRole as UserRole))
+  const donorProfileHref = myDonor
+    ? `/dashboard/donors/${myDonor.id}/edit`
+    : "/dashboard/add-donor"
 
   return (
     <div className="space-y-8">
@@ -64,6 +100,30 @@ export default function DashboardPage() {
           </div>
         </CardContent>
       </Card>
+
+      {!isAdmin && (
+        <Card className="border-green-500/20 bg-green-500/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-700">
+              <CheckCircle2 className="h-5 w-5" />
+              {completionPercentage === 100
+                ? "Donor Profile Complete"
+                : "Complete Your Donor Profile"}
+            </CardTitle>
+            <CardDescription>
+              Your donor profile is {completionPercentage}% complete.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Progress value={completionPercentage} />
+            <Button asChild variant="outline">
+              <Link href={donorProfileHref}>
+                {myDonor ? "Update Donor Profile" : "Complete Donor Profile"}
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Quick Actions */}
       <div>

@@ -26,7 +26,9 @@ export default function AddDonorPage() {
   const { data: session, status } = useSession()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const [isCheckingProfile, setIsCheckingProfile] = useState(true)
   const [addresses, setAddresses] = useState<Address[]>([])
+  const isAdmin = canManageDonors(session?.user?.role ?? null)
 
   const [formData, setFormData] = useState({
     name: "",
@@ -43,26 +45,33 @@ export default function AddDonorPage() {
   useEffect(() => {
     if (status === "loading") return
 
-    if (!canManageDonors(session?.user?.role ?? null)) {
-      router.replace("/403")
-      return
-    }
-
-    const fetchAddresses = async () => {
+    const fetchPageData = async () => {
       try {
-        const res = await fetch("/api/addresses")
-        const data = await res.json()
+        if (!isAdmin) {
+          const profileRes = await fetch("/api/donors/me")
+          const profileData = await profileRes.json()
 
-        if (res.ok) {
-          setAddresses(data.addresses || [])
+          if (profileRes.ok && profileData.donor?.id) {
+            router.replace(`/dashboard/donors/${profileData.donor.id}/edit`)
+            return
+          }
+        }
+
+        const addressRes = await fetch("/api/addresses")
+        const addressData = await addressRes.json()
+
+        if (addressRes.ok) {
+          setAddresses(addressData.addresses || [])
         }
       } catch (error) {
-        console.error("Failed to fetch addresses:", error)
+        console.error("Failed to fetch donor form data:", error)
+      } finally {
+        setIsCheckingProfile(false)
       }
     }
 
-    fetchAddresses()
-  }, [router, session?.user?.role, status])
+    fetchPageData()
+  }, [isAdmin, router, status])
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -89,11 +98,18 @@ export default function AddDonorPage() {
 
       if (res.ok) {
         toast({
-          title: "Donor Added",
-          description: "The donor has been registered successfully.",
+          title: isAdmin ? "Donor Added" : "Profile Completed",
+          description: isAdmin
+            ? "The donor has been registered successfully."
+            : "Your donor profile has been created successfully.",
         })
         router.push("/dashboard")
       } else {
+        if (res.status === 409 && data.donorId) {
+          router.push(`/dashboard/donors/${data.donorId}/edit`)
+          return
+        }
+
         toast({
           title: "Error",
           description: data.error || "Failed to add donor.",
@@ -113,6 +129,14 @@ export default function AddDonorPage() {
 
   return (
     <div className="space-y-6">
+      {isCheckingProfile ? (
+        <Card>
+          <CardContent className="p-6 text-sm text-muted-foreground">
+            Loading donor profile...
+          </CardContent>
+        </Card>
+      ) : (
+        <>
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" asChild>
@@ -121,9 +145,13 @@ export default function AddDonorPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Add New Donor</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            {isAdmin ? "Add New Donor" : "Complete Donor Profile"}
+          </h1>
           <p className="mt-1 text-muted-foreground">
-            Register a new blood donor in the system.
+            {isAdmin
+              ? "Register a new blood donor in the system."
+              : "Create your own blood donor profile."}
           </p>
         </div>
       </div>
@@ -133,7 +161,9 @@ export default function AddDonorPage() {
         <CardHeader>
           <CardTitle>Donor Information</CardTitle>
           <CardDescription>
-            Fill in the details of the new blood donor.
+            {isAdmin
+              ? "Fill in the details of the new blood donor."
+              : "Fill in your details to make your donor profile complete."}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -263,7 +293,7 @@ export default function AddDonorPage() {
                 ) : (
                   <>
                     <UserPlus className="mr-2 h-4 w-4" />
-                    Add Donor
+                    {isAdmin ? "Add Donor" : "Complete Profile"}
                   </>
                 )}
               </Button>
@@ -274,6 +304,8 @@ export default function AddDonorPage() {
           </form>
         </CardContent>
       </Card>
+        </>
+      )}
     </div>
   )
 }

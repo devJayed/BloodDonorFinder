@@ -29,6 +29,7 @@ export interface Donor {
   dateOfBirth: string | null
   bloodGroup: BloodGroup | null
   lastDonationDate: string | null
+  createdBy: string
 }
 
 export interface Address {

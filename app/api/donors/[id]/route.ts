@@ -41,6 +41,7 @@ export async function GET(
         dateOfBirth: donor.dateOfBirth?.toISOString() || null,
         bloodGroup: donor.bloodGroup,
         lastDonationDate: donor.lastDonationDate?.toISOString() || null,
+        createdBy: donor.createdBy.toString(),
       },
     })
   } catch (error) {
@@ -67,7 +68,7 @@ export async function PATCH(
 
     if (!authorized) {
       return NextResponse.json(
-        { error: "Only admins can update donors" },
+        { error: "You are not allowed to update donors" },
         { status: 403 }
       )
     }
@@ -89,7 +90,7 @@ export async function PATCH(
       )
     ) {
       return NextResponse.json(
-        { error: "Only admins can update donors" },
+        { error: "You can only update your own donor profile" },
         { status: 403 }
       )
     }
@@ -137,6 +138,7 @@ export async function PATCH(
         dateOfBirth: donor.dateOfBirth?.toISOString() || null,
         bloodGroup: donor.bloodGroup,
         lastDonationDate: donor.lastDonationDate?.toISOString() || null,
+        createdBy: donor.createdBy.toString(),
       },
     })
   } catch (error) {

@@ -48,7 +48,8 @@ export default function AdminPage() {
       (donor) =>
         donor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         donor.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        donor.bloodGroup?.toLowerCase().includes(searchQuery.toLowerCase())
+        donor.bloodGroup?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        donor.createdBy.toLowerCase().includes(searchQuery.toLowerCase())
     )
     setFilteredDonors(filtered)
   }, [searchQuery, donors])
@@ -192,6 +193,7 @@ export default function AdminPage() {
                     <TableHead>Blood Group</TableHead>
                     <TableHead className="hidden md:table-cell">Address</TableHead>
                     <TableHead className="hidden sm:table-cell">Mobile</TableHead>
+                    <TableHead className="hidden lg:table-cell">Created By</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -213,6 +215,9 @@ export default function AdminPage() {
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
                         {donor.mobile}
+                      </TableCell>
+                      <TableCell className="hidden max-w-[160px] truncate font-mono text-xs lg:table-cell">
+                        {donor.createdBy}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">

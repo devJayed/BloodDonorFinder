@@ -36,6 +36,8 @@ export default function EditDonorPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [addresses, setAddresses] = useState<Address[]>([])
+  const isAdmin = canManageDonors(session?.user?.role ?? null)
+  const backHref = isAdmin ? "/admin" : "/dashboard"
   const [formData, setFormData] = useState({
     name: "",
     fatherName: "",
@@ -50,11 +52,6 @@ export default function EditDonorPage() {
 
   useEffect(() => {
     if (status === "loading") return
-
-    if (!canManageDonors(session?.user?.role ?? null)) {
-      router.replace("/403")
-      return
-    }
 
     const fetchData = async () => {
       try {
@@ -77,6 +74,12 @@ export default function EditDonorPage() {
         }
 
         const donor = donorData.donor
+
+        if (!isAdmin && donor.createdBy !== session?.user?.id) {
+          router.replace("/403")
+          return
+        }
+
         setFormData({
           name: donor.name || "",
           fatherName: donor.fatherName || "",
@@ -104,7 +107,7 @@ export default function EditDonorPage() {
     }
 
     fetchData()
-  }, [params.id, router, session?.user?.role, status, toast])
+  }, [isAdmin, params.id, router, session?.user?.id, status, toast])
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -130,10 +133,12 @@ export default function EditDonorPage() {
 
       if (res.ok) {
         toast({
-          title: "Donor Updated",
-          description: "The donor has been updated successfully.",
+          title: isAdmin ? "Donor Updated" : "Profile Updated",
+          description: isAdmin
+            ? "The donor has been updated successfully."
+            : "Your donor profile has been updated successfully.",
         })
-        router.push("/admin")
+        router.push(backHref)
       } else {
         toast({
           title: "Error",
@@ -165,14 +170,18 @@ export default function EditDonorPage() {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" asChild>
-          <Link href="/admin">
+          <Link href={backHref}>
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Edit Donor</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            {isAdmin ? "Edit Donor" : "Edit Donor Profile"}
+          </h1>
           <p className="mt-1 text-muted-foreground">
-            Update this blood donor record.
+            {isAdmin
+              ? "Update this blood donor record."
+              : "Update your own blood donor profile."}
           </p>
         </div>
       </div>
@@ -181,7 +190,9 @@ export default function EditDonorPage() {
         <CardHeader>
           <CardTitle>Donor Information</CardTitle>
           <CardDescription>
-            Make changes to the registered blood donor.
+            {isAdmin
+              ? "Make changes to the registered blood donor."
+              : "Make changes to your donor profile."}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -319,7 +330,7 @@ export default function EditDonorPage() {
                 )}
               </Button>
               <Button type="button" variant="outline" asChild>
-                <Link href="/admin">Cancel</Link>
+                <Link href={backHref}>Cancel</Link>
               </Button>
             </div>
           </form>

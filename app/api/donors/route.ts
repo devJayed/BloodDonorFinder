@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
 import { connectToDatabase } from "@/lib/mongodb"
 import Donor from "@/models/Donor"
-import { hasPermission, maskMobileNumber } from "@/lib/permissions"
+import {
+  canManageDonors,
+  hasPermission,
+  maskMobileNumber,
+} from "@/lib/permissions"
 import { authorize } from "@/lib/server-permissions"
 
 // GET /api/donors - Get all donors
@@ -28,6 +32,7 @@ export async function GET() {
       dateOfBirth: donor.dateOfBirth?.toISOString() || null,
       bloodGroup: donor.bloodGroup,
       lastDonationDate: donor.lastDonationDate?.toISOString() || null,
+      createdBy: donor.createdBy.toString(),
     }))
 
     return NextResponse.json({ donors })
@@ -54,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     if (!authorized) {
       return NextResponse.json(
-        { error: "Only admins can add donors." },
+        { error: "You are not allowed to add donors." },
         { status: 403 }
       )
     }
@@ -70,6 +75,7 @@ export async function POST(request: NextRequest) {
       dateOfBirth,
       bloodGroup,
       lastDonationDate,
+      createdBy,
     } = body
 
     // Validate required fields
@@ -82,6 +88,23 @@ export async function POST(request: NextRequest) {
 
     await connectToDatabase()
 
+    const isAdmin = canManageDonors(session.user.role)
+    const ownerId = isAdmin && createdBy ? createdBy : session.user.id
+
+    if (!isAdmin) {
+      const existingOwnDonor = await Donor.findOne({ createdBy: session.user.id })
+
+      if (existingOwnDonor) {
+        return NextResponse.json(
+          {
+            error: "Your donor profile already exists. Please update it instead.",
+            donorId: existingOwnDonor._id.toString(),
+          },
+          { status: 409 }
+        )
+      }
+    }
+
     const donor = await Donor.create({
       name,
       fatherName,
@@ -92,7 +115,7 @@ export async function POST(request: NextRequest) {
       dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
       bloodGroup: bloodGroup || null,
       lastDonationDate: lastDonationDate ? new Date(lastDonationDate) : null,
-      createdBy: session.user.id,
+      createdBy: ownerId,
     })
 
     return NextResponse.json(
@@ -109,6 +132,7 @@ export async function POST(request: NextRequest) {
           dateOfBirth: donor.dateOfBirth?.toISOString() || null,
           bloodGroup: donor.bloodGroup,
           lastDonationDate: donor.lastDonationDate?.toISOString() || null,
+          createdBy: donor.createdBy.toString(),
         },
       },
       { status: 201 }

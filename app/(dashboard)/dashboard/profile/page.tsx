@@ -229,6 +229,7 @@ export default function ProfilePage() {
             {session?.user?.role === "USER" && (
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>- Update your own account profile</li>
+                <li>- Create and update your own donor profile</li>
                 <li>- View all donors</li>
                 <li>- Access personal dashboard</li>
               </ul>
