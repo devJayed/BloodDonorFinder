@@ -2,19 +2,74 @@
 
 import { useSession } from "next-auth/react"
 import { useState, useEffect } from "react"
-import { User, Mail, Shield } from "lucide-react"
+import { Save, User, Mail, Shield } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useToast } from "@/hooks/use-toast"
 
 export default function ProfilePage() {
-  const { data: session, status } = useSession()
+  const { data: session, status, update } = useSession()
+  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+  })
 
   useEffect(() => {
     if (status !== "loading") {
       setIsLoading(false)
     }
   }, [status])
+
+  useEffect(() => {
+    if (session?.user) {
+      setFormData({
+        name: session.user.name || "",
+        email: session.user.email || "",
+      })
+    }
+  }, [session])
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
+    setIsSaving(true)
+
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
+      const data = await res.json()
+
+      if (res.ok) {
+        await update({ user: data.user })
+        toast({
+          title: "Profile Updated",
+          description: "Your profile has been updated successfully.",
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: data.error || "Failed to update profile.",
+          variant: "destructive",
+        })
+      }
+    } catch {
+      toast({
+        title: "Error",
+        description: "Something went wrong.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -65,7 +120,6 @@ export default function ProfilePage() {
         </p>
       </div>
 
-      {/* Profile Card */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-4">
@@ -79,6 +133,52 @@ export default function ProfilePage() {
           </div>
         </CardHeader>
         <CardContent>
+          <form onSubmit={handleSubmit} className="mb-6 space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(event) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      name: event.target.value,
+                    }))
+                  }
+                  required
+                  minLength={2}
+                  maxLength={100}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(event) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      email: event.target.value,
+                    }))
+                  }
+                  required
+                />
+              </div>
+            </div>
+            <Button type="submit" disabled={isSaving}>
+              {isSaving ? (
+                "Saving..."
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Profile
+                </>
+              )}
+            </Button>
+          </form>
+
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {profileFields.map((field) => (
               <div
@@ -128,8 +228,7 @@ export default function ProfilePage() {
             )}
             {session?.user?.role === "USER" && (
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>- Create your own donor profile</li>
-                <li>- Update your donor profile</li>
+                <li>- Update your own account profile</li>
                 <li>- View all donors</li>
                 <li>- Access personal dashboard</li>
               </ul>

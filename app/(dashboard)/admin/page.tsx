@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
+import Link from "next/link"
 import { Plus, Search, Edit, Trash2, Users, Droplet } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -121,9 +122,11 @@ export default function AdminPage() {
             Manage all blood donors in the system.
           </p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Donor
+        <Button asChild>
+          <Link href="/dashboard/add-donor">
+            <Plus className="mr-2 h-4 w-4" />
+            Add Donor
+          </Link>
         </Button>
       </div>
 
@@ -213,8 +216,10 @@ export default function AdminPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <Button variant="outline" size="sm">
-                            <Edit className="h-4 w-4" />
+                          <Button variant="outline" size="sm" asChild>
+                            <Link href={`/dashboard/donors/${donor.id}/edit`}>
+                              <Edit className="h-4 w-4" />
+                            </Link>
                           </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>

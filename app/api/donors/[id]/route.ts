@@ -61,8 +61,15 @@ export async function PATCH(
     const { id } = await params
     const { authorized, session } = await authorize("donor:update")
 
-    if (!authorized || !session?.user) {
+    if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    if (!authorized) {
+      return NextResponse.json(
+        { error: "Only admins can update donors" },
+        { status: 403 }
+      )
     }
 
     await connectToDatabase()
@@ -82,7 +89,7 @@ export async function PATCH(
       )
     ) {
       return NextResponse.json(
-        { error: "You can only modify your own donor profiles" },
+        { error: "Only admins can update donors" },
         { status: 403 }
       )
     }
@@ -150,8 +157,15 @@ export async function DELETE(
     const { id } = await params
     const { authorized, session } = await authorize("donor:delete")
 
-    if (!authorized || !session?.user) {
+    if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    if (!authorized) {
+      return NextResponse.json(
+        { error: "Only admins can delete donors" },
+        { status: 403 }
+      )
     }
 
     await connectToDatabase()

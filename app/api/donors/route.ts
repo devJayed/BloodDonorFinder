@@ -45,10 +45,17 @@ export async function POST(request: NextRequest) {
   try {
     const { authorized, session } = await authorize("donor:create")
 
-    if (!authorized || !session?.user) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: "Unauthorized. Please login to add donors." },
         { status: 401 }
+      )
+    }
+
+    if (!authorized) {
+      return NextResponse.json(
+        { error: "Only admins can add donors." },
+        { status: 403 }
       )
     }
 

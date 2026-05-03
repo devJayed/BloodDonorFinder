@@ -6,7 +6,7 @@ import { getToken } from "next-auth/jwt"
 const protectedRoutes = ["/dashboard", "/admin", "/super-admin"]
 
 // Routes that require specific roles
-const adminRoutes = ["/admin"]
+const adminRoutes = ["/admin", "/dashboard/add-donor", "/dashboard/donors"]
 const superAdminRoutes = ["/super-admin"]
 
 // Routes that authenticated users should not access

@@ -28,12 +28,7 @@ const rolePermissions: Record<UserRole, Permission[]> = {
     "donor:update",
     "donor:delete",
   ],
-  USER: [
-    "donor:view",
-    "donor:view_full",
-    "donor:create",
-    "donor:update", // Can only update own donor profile (enforced in API)
-  ],
+  USER: ["donor:view", "donor:view_full"],
 }
 
 // Guest permissions (unauthenticated users)
@@ -77,19 +72,22 @@ export function canAccessSuperAdmin(role: UserRole | null): boolean {
 }
 
 /**
+ * Check if user can create, update, or delete donor records.
+ */
+export function canManageDonors(role: UserRole | null): boolean {
+  return role === "ADMIN" || role === "SUPER_ADMIN"
+}
+
+/**
  * Check if user can modify a specific donor
- * ADMIN and SUPER_ADMIN can modify any donor
- * USER can only modify their own donor profile
+ * ADMIN and SUPER_ADMIN can modify any donor.
  */
 export function canModifyDonor(
   role: UserRole,
-  userId: string,
-  donorCreatedBy: string
+  _userId: string,
+  _donorCreatedBy: string
 ): boolean {
-  if (role === "SUPER_ADMIN" || role === "ADMIN") {
-    return true
-  }
-  return role === "USER" && userId === donorCreatedBy
+  return canManageDonors(role)
 }
 
 /**

@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Users, UserPlus, Search, Shield } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { canAccessAdmin } from "@/lib/permissions"
+import { canAccessAdmin, canManageDonors } from "@/lib/permissions"
 import type { UserRole } from "@/lib/types"
 
 export default function DashboardPage() {
@@ -33,8 +33,9 @@ export default function DashboardPage() {
       icon: UserPlus,
       href: "/dashboard/add-donor",
       color: "bg-purple-500/10 text-purple-600",
+      roles: ["ADMIN", "SUPER_ADMIN"] as UserRole[],
     },
-  ]
+  ].filter((action) => !action.roles || action.roles.includes(userRole as UserRole))
 
   return (
     <div className="space-y-8">
@@ -44,7 +45,7 @@ export default function DashboardPage() {
           Welcome back, {session?.user?.name}
         </h1>
         <p className="mt-1 text-muted-foreground">
-          Manage your blood donor profile and find donors in your area.
+          Manage your profile and find donors in your area.
         </p>
       </div>
 
@@ -97,7 +98,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Admin Access */}
-      {canAccessAdmin(userRole ?? null) && (
+      {canAccessAdmin(userRole ?? null) && canManageDonors(userRole ?? null) && (
         <Card className="border-orange-500/20 bg-orange-500/5">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-orange-600">
