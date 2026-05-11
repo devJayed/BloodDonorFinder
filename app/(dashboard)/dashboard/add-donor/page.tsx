@@ -1,14 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { ArrowLeft, UserPlus } from "lucide-react"
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Select,
   SelectContent,
@@ -20,6 +15,11 @@ import { useToast } from "@/hooks/use-toast"
 import { BLOOD_GROUPS } from "@/lib/blood-groups"
 import { canManageDonors } from "@/lib/permissions"
 import type { Address, BloodGroup } from "@/lib/types"
+import { ArrowLeft, UserPlus } from "lucide-react"
+import { useSession } from "next-auth/react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
 export default function AddDonorPage() {
   const router = useRouter()
@@ -34,9 +34,12 @@ export default function AddDonorPage() {
     name: "",
     fatherName: "",
     motherName: "",
+    profileImage: "",
     address: "",
     mobile: "",
     age: "",
+    weight: "",
+    gender: "" as "male" | "female" | "other" | "",
     dateOfBirth: "",
     bloodGroup: "" as BloodGroup | "",
     lastDonationDate: "",
@@ -79,6 +82,16 @@ export default function AddDonorPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!formData.address || !formData.dateOfBirth) {
+      toast({
+        title: "Missing Required Fields",
+        description: "Please select an address and enter date of birth.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsLoading(true)
 
     try {
@@ -87,9 +100,11 @@ export default function AddDonorPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          age: parseInt(formData.age) || 0,
+          age: formData.age ? parseInt(formData.age) : null,
+          weight: formData.weight ? parseInt(formData.weight) : null,
+          gender: formData.gender || null,
           bloodGroup: formData.bloodGroup || null,
-          dateOfBirth: formData.dateOfBirth || null,
+          dateOfBirth: formData.dateOfBirth,
           lastDonationDate: formData.lastDonationDate || null,
         }),
       })
@@ -203,32 +218,75 @@ export default function AddDonorPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="motherName">Mother&apos;s Name *</Label>
+                <Label htmlFor="motherName">Mother&apos;s Name</Label>
                 <Input
                   id="motherName"
                   value={formData.motherName}
                   onChange={(e) => handleChange("motherName", e.target.value)}
                   placeholder="Enter mother's name"
-                  required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="age">Age *</Label>
+                <Label htmlFor="profileImage">Profile Image</Label>
+                <Input
+                  id="profileImage"
+                  value={formData.profileImage}
+                  onChange={(e) => handleChange("profileImage", e.target.value)}
+                  placeholder="Enter image URL"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="age">Age</Label>
                 <Input
                   id="age"
                   type="number"
-                  min="18"
+                  min="1"
                   max="65"
                   value={formData.age}
                   onChange={(e) => handleChange("age", e.target.value)}
                   placeholder="Enter age"
-                  required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="bloodGroup">Blood Group</Label>
+                <Label htmlFor="weight">Weight</Label>
+                <Input
+                  id="weight"
+                  type="number"
+                  min="1"
+                  value={formData.weight}
+                  onChange={(e) => handleChange("weight", e.target.value)}
+                  placeholder="Enter weight"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="gender">Gender</Label>
+                <Select
+                  value={formData.gender || "not-specified"}
+                  onValueChange={(value) =>
+                    handleChange(
+                      "gender",
+                      value === "not-specified" ? "" : value
+                    )
+                  }
+                >
+                  <SelectTrigger id="gender">
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="not-specified">Not specified</SelectItem>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bloodGroup">Blood Group *</Label>
                 <Select
                   value={formData.bloodGroup}
                   onValueChange={(value) => handleChange("bloodGroup", value)}
@@ -252,7 +310,7 @@ export default function AddDonorPage() {
                   value={formData.address}
                   onValueChange={(value) => handleChange("address", value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger aria-required="true">
                     <SelectValue placeholder="Select address" />
                   </SelectTrigger>
                   <SelectContent className="max-h-[200px]">
@@ -266,12 +324,13 @@ export default function AddDonorPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                <Label htmlFor="dateOfBirth">Date of Birth *</Label>
                 <Input
                   id="dateOfBirth"
                   type="date"
                   value={formData.dateOfBirth}
                   onChange={(e) => handleChange("dateOfBirth", e.target.value)}
+                  required
                 />
               </div>
 

@@ -41,7 +41,7 @@ export function DonorCard({ donor, index }: DonorCardProps) {
               <div>
                 <h3 className="font-semibold text-foreground">{donor.name}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {donor.age} years old
+                  {donor.age ? `${donor.age} years old` : "Age not added"}
                 </p>
               </div>
             </div>
@@ -64,7 +64,7 @@ export function DonorCard({ donor, index }: DonorCardProps) {
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4 shrink-0 text-primary/70" />
-              <span className="truncate">{donor.address}</span>
+              <span className="truncate">{donor.address || "Address not added"}</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Calendar className="h-4 w-4 shrink-0 text-primary/70" />

@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server"
 import { connectToDatabase } from "@/lib/mongodb"
 import User from "@/models/User"
+import { NextRequest, NextResponse } from "next/server"
 
+// POST /api/auth/register - Register a new user
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()

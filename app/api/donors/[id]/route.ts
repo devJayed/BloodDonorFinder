@@ -8,6 +8,21 @@ import {
 } from "@/lib/permissions"
 import { authorize } from "@/lib/server-permissions"
 
+function parseOptionalNumber(value: unknown) {
+  if (value === null || value === undefined || value === "") {
+    return null
+  }
+
+  const parsedNumber = Number(value)
+  return Number.isFinite(parsedNumber) ? parsedNumber : null
+}
+
+function parseOptionalGender(gender: unknown) {
+  return gender === "male" || gender === "female" || gender === "other"
+    ? gender
+    : null
+}
+
 // GET /api/donors/[id] - Get a single donor
 export async function GET(
   request: NextRequest,
@@ -35,9 +50,12 @@ export async function GET(
         name: donor.name,
         fatherName: donor.fatherName,
         motherName: donor.motherName,
+        profileImage: donor.profileImage,
         address: donor.address,
         mobile: maskMobileNumber(donor.mobile, canViewFullMobile),
         age: donor.age,
+        weight: donor.weight,
+        gender: donor.gender,
         dateOfBirth: donor.dateOfBirth?.toISOString() || null,
         bloodGroup: donor.bloodGroup,
         lastDonationDate: donor.lastDonationDate?.toISOString() || null,
@@ -100,23 +118,42 @@ export async function PATCH(
       name,
       fatherName,
       motherName,
+      profileImage,
       address,
       mobile,
       age,
+      weight,
+      gender,
       dateOfBirth,
       bloodGroup,
       lastDonationDate,
     } = body
 
+    if (address !== undefined && !address) {
+      return NextResponse.json(
+        { error: "Address is required" },
+        { status: 400 }
+      )
+    }
+
+    if (dateOfBirth !== undefined && !dateOfBirth) {
+      return NextResponse.json(
+        { error: "Date of birth is required" },
+        { status: 400 }
+      )
+    }
+
     // Update fields
     if (name) donor.name = name
     if (fatherName) donor.fatherName = fatherName
-    if (motherName) donor.motherName = motherName
-    if (address) donor.address = address
+    if (motherName !== undefined) donor.motherName = motherName || null
+    if (profileImage !== undefined) donor.profileImage = profileImage || null
+    if (address !== undefined) donor.address = address
     if (mobile) donor.mobile = mobile
-    if (age) donor.age = parseInt(age)
-    if (dateOfBirth !== undefined)
-      donor.dateOfBirth = dateOfBirth ? new Date(dateOfBirth) : null
+    if (age !== undefined) donor.age = parseOptionalNumber(age)
+    if (weight !== undefined) donor.weight = parseOptionalNumber(weight)
+    if (gender !== undefined) donor.gender = parseOptionalGender(gender)
+    if (dateOfBirth !== undefined) donor.dateOfBirth = new Date(dateOfBirth)
     if (bloodGroup !== undefined) donor.bloodGroup = bloodGroup || null
     if (lastDonationDate !== undefined)
       donor.lastDonationDate = lastDonationDate
@@ -132,9 +169,12 @@ export async function PATCH(
         name: donor.name,
         fatherName: donor.fatherName,
         motherName: donor.motherName,
+        profileImage: donor.profileImage,
         address: donor.address,
         mobile: donor.mobile,
         age: donor.age,
+        weight: donor.weight,
+        gender: donor.gender,
         dateOfBirth: donor.dateOfBirth?.toISOString() || null,
         bloodGroup: donor.bloodGroup,
         lastDonationDate: donor.lastDonationDate?.toISOString() || null,

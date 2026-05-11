@@ -7,15 +7,20 @@ const profileFields = [
   "name",
   "fatherName",
   "motherName",
+  "profileImage",
   "address",
   "mobile",
   "age",
+  "weight",
+  "gender",
   "dateOfBirth",
   "bloodGroup",
   "lastDonationDate",
 ] as const
 
-function getCompletion(donor: Record<string, unknown> | null) {
+type ProfileField = (typeof profileFields)[number]
+
+function getCompletion(donor: Partial<Record<ProfileField, unknown>> | null) {
   if (!donor) {
     return 0
   }
@@ -54,9 +59,12 @@ export async function GET() {
         name: donor.name,
         fatherName: donor.fatherName,
         motherName: donor.motherName,
+        profileImage: donor.profileImage,
         address: donor.address,
         mobile: donor.mobile,
         age: donor.age,
+        weight: donor.weight,
+        gender: donor.gender,
         dateOfBirth: donor.dateOfBirth?.toISOString() || null,
         bloodGroup: donor.bloodGroup,
         lastDonationDate: donor.lastDonationDate?.toISOString() || null,

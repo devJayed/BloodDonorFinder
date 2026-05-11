@@ -1,17 +1,20 @@
-import mongoose, { Schema, Document, Model } from "mongoose"
 import type { BloodGroup } from "@/lib/types"
+import mongoose, { Document, Model, Schema } from "mongoose"
 
 export interface IDonor extends Document {
   _id: mongoose.Types.ObjectId
   name: string
   fatherName: string
-  motherName: string
-  address: string
+  motherName?: string | null
+  profileImage?: string | null
+  address: string | null
   mobile: string
-  age: number
+  age?: number | null
+  weight?: number | null
+  gender?: "male" | "female" | "other" | null
   dateOfBirth: Date | null
   bloodGroup: BloodGroup | null
-  lastDonationDate: Date | null
+  lastDonationDate?: Date | null
   createdBy: mongoose.Types.ObjectId
   createdAt: Date
   updatedAt: Date
@@ -26,29 +29,42 @@ const DonorSchema = new Schema<IDonor>(
     },
     fatherName: {
       type: String,
-      required: [true, "Father's name is required"],
       trim: true,
+      default: "",
     },
     motherName: {
       type: String,
-      required: [true, "Mother's name is required"],
       trim: true,
+      default: null,
+    },
+    profileImage: {
+      type: String,
+      trim: true,
+      default: null,
     },
     address: {
       type: String,
-      required: [true, "Address is required"],
       trim: true,
+      default: "",
     },
     mobile: {
       type: String,
-      required: [true, "Mobile number is required"],
       trim: true,
+      default: "",
     },
     age: {
       type: Number,
-      required: [true, "Age is required"],
-      min: [18, "Donor must be at least 18 years old"],
-      max: [65, "Donor cannot be older than 65 years"],
+      default: null,
+    },
+    weight: {
+      type: Number,
+      min: [1, "Weight must be greater than 0"],
+      default: null,
+    },
+    gender: {
+      type: String,
+      enum: ["male", "female", "other", null],
+      default: null,
     },
     dateOfBirth: {
       type: Date,

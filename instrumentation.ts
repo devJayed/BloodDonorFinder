@@ -7,8 +7,9 @@ export async function register() {
 
   try {
     await connectToDatabase()
-    console.log("[Seed] Startup database check completed")
+    // console.log("[Seed] Startup database check completed")
   } catch (error) {
-    console.error("[Seed] Startup database check failed:", error)
+    // console.error("[Seed] Startup database check failed:", error)
+    console.error("An error occured:", error)
   }
 }

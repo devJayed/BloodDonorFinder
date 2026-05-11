@@ -1,26 +1,51 @@
 "use client"
 
-import { useState, useCallback, useEffect, useMemo } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Header } from "@/components/header"
 import { SearchBar } from "@/components/search-bar"
 import { DonorGrid } from "@/components/donor-grid"
+import { PagePagination } from "@/components/page-pagination"
 import type { Donor } from "@/lib/types"
+
+const pageSize = 9
 
 export default function Home() {
   const [bloodGroup, setBloodGroup] = useState("all")
   const [address, setAddress] = useState("all")
-  const [allDonors, setAllDonors] = useState<Donor[]>([])
+  const [activeBloodGroup, setActiveBloodGroup] = useState("all")
+  const [activeAddress, setActiveAddress] = useState("all")
+  const [donors, setDonors] = useState<Donor[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalItems, setTotalItems] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
   const [isLoading, setIsLoading] = useState(true)
   const [hasSearched, setHasSearched] = useState(false)
 
   useEffect(() => {
     const fetchDonors = async () => {
+      setIsLoading(true)
+
       try {
-        const res = await fetch("/api/donors")
+        const params = new URLSearchParams({
+          page: currentPage.toString(),
+          limit: pageSize.toString(),
+        })
+
+        if (hasSearched && activeBloodGroup !== "all") {
+          params.set("bloodGroup", activeBloodGroup)
+        }
+
+        if (hasSearched && activeAddress !== "all") {
+          params.set("address", activeAddress)
+        }
+
+        const res = await fetch(`/api/donors?${params.toString()}`)
         const data = await res.json()
 
         if (res.ok) {
-          setAllDonors(data.donors || [])
+          setDonors(data.donors || [])
+          setTotalItems(data.pagination?.totalItems || 0)
+          setTotalPages(data.pagination?.totalPages || 1)
         }
       } catch (error) {
         console.error("Failed to fetch donors:", error)
@@ -30,24 +55,18 @@ export default function Home() {
     }
 
     fetchDonors()
-  }, [])
-
-  const filteredDonors = useMemo(() => {
-    if (!hasSearched) return allDonors
-
-    return allDonors.filter((donor) => {
-      const matchesBloodGroup =
-        bloodGroup === "all" || donor.bloodGroup === bloodGroup
-      const matchesAddress =
-        address === "all" ||
-        donor.address.toLowerCase().includes(address.toLowerCase())
-
-      return matchesBloodGroup && matchesAddress
-    })
-  }, [allDonors, bloodGroup, address, hasSearched])
+  }, [activeAddress, activeBloodGroup, currentPage, hasSearched])
 
   const handleSearch = useCallback(() => {
+    setActiveBloodGroup(bloodGroup)
+    setActiveAddress(address)
     setHasSearched(true)
+    setCurrentPage(1)
+  }, [address, bloodGroup])
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: "smooth" })
   }, [])
 
   return (
@@ -79,12 +98,20 @@ export default function Home() {
             {hasSearched ? "Search Results" : "All Donors"}
           </h2>
           <span className="text-sm text-muted-foreground">
-            {filteredDonors.length} donor{filteredDonors.length !== 1 && "s"}{" "}
-            found
+            {totalItems} donor{totalItems !== 1 && "s"} found
           </span>
         </div>
 
-        <DonorGrid donors={filteredDonors} isLoading={isLoading} />
+        <div className="space-y-6">
+          <DonorGrid donors={donors} isLoading={isLoading} />
+          <PagePagination
+            page={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+          />
+        </div>
       </main>
 
       <footer className="border-t border-border/40 py-6">

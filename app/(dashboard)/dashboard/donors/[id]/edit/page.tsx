@@ -42,9 +42,12 @@ export default function EditDonorPage() {
     name: "",
     fatherName: "",
     motherName: "",
+    profileImage: "",
     address: "",
     mobile: "",
     age: "",
+    weight: "",
+    gender: "" as "male" | "female" | "other" | "",
     dateOfBirth: "",
     bloodGroup: "" as BloodGroup | "",
     lastDonationDate: "",
@@ -84,9 +87,12 @@ export default function EditDonorPage() {
           name: donor.name || "",
           fatherName: donor.fatherName || "",
           motherName: donor.motherName || "",
+          profileImage: donor.profileImage || "",
           address: donor.address || "",
           mobile: donor.mobile || "",
           age: donor.age?.toString() || "",
+          weight: donor.weight?.toString() || "",
+          gender: donor.gender || "",
           dateOfBirth: donor.dateOfBirth?.slice(0, 10) || "",
           bloodGroup: donor.bloodGroup || "",
           lastDonationDate: donor.lastDonationDate?.slice(0, 10) || "",
@@ -115,6 +121,16 @@ export default function EditDonorPage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
+
+    if (!formData.address || !formData.dateOfBirth) {
+      toast({
+        title: "Missing Required Fields",
+        description: "Please select an address and enter date of birth.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsSaving(true)
 
     try {
@@ -123,9 +139,11 @@ export default function EditDonorPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          age: parseInt(formData.age) || 0,
+          age: formData.age ? parseInt(formData.age) : null,
+          weight: formData.weight ? parseInt(formData.weight) : null,
+          gender: formData.gender || null,
           bloodGroup: formData.bloodGroup || null,
-          dateOfBirth: formData.dateOfBirth || null,
+          dateOfBirth: formData.dateOfBirth,
           lastDonationDate: formData.lastDonationDate || null,
         }),
       })
@@ -231,19 +249,29 @@ export default function EditDonorPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="motherName">Mother&apos;s Name *</Label>
+                <Label htmlFor="motherName">Mother&apos;s Name</Label>
                 <Input
                   id="motherName"
                   value={formData.motherName}
                   onChange={(event) =>
                     handleChange("motherName", event.target.value)
                   }
-                  required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="age">Age *</Label>
+                <Label htmlFor="profileImage">Profile Image</Label>
+                <Input
+                  id="profileImage"
+                  value={formData.profileImage}
+                  onChange={(event) =>
+                    handleChange("profileImage", event.target.value)
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="age">Age</Label>
                 <Input
                   id="age"
                   type="number"
@@ -251,8 +279,43 @@ export default function EditDonorPage() {
                   max="65"
                   value={formData.age}
                   onChange={(event) => handleChange("age", event.target.value)}
-                  required
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="weight">Weight</Label>
+                <Input
+                  id="weight"
+                  type="number"
+                  min="1"
+                  value={formData.weight}
+                  onChange={(event) =>
+                    handleChange("weight", event.target.value)
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="gender">Gender</Label>
+                <Select
+                  value={formData.gender || "not-specified"}
+                  onValueChange={(value) =>
+                    handleChange(
+                      "gender",
+                      value === "not-specified" ? "" : value
+                    )
+                  }
+                >
+                  <SelectTrigger id="gender">
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="not-specified">Not specified</SelectItem>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
@@ -294,7 +357,7 @@ export default function EditDonorPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                <Label htmlFor="dateOfBirth">Date of Birth *</Label>
                 <Input
                   id="dateOfBirth"
                   type="date"
@@ -302,6 +365,7 @@ export default function EditDonorPage() {
                   onChange={(event) =>
                     handleChange("dateOfBirth", event.target.value)
                   }
+                  required
                 />
               </div>
 

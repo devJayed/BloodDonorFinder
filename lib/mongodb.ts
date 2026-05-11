@@ -1,5 +1,5 @@
 import mongoose from "mongoose"
-import { seedDatabase } from "./seed"
+// import { seedDatabase } from "./seed"
 
 const MONGODB_URI = process.env.MONGODB_URI!
 
@@ -26,7 +26,7 @@ if (!global.mongoose) {
 
 export async function connectToDatabase() {
   if (cached.conn) {
-    await seedDatabase()
+    // await seedDatabase()
     return cached.conn
   }
 
@@ -44,7 +44,7 @@ export async function connectToDatabase() {
     cached.conn = await cached.promise
     
     // Run seeding after successful connection (idempotent - only runs once)
-    await seedDatabase()
+    // await seedDatabase()
   } catch (e) {
     cached.promise = null
     throw e

@@ -38,6 +38,12 @@ const navItems: NavItem[] = [
     icon: UserCircle,
   },
   {
+    label: "Donor Profile",
+    href: "/dashboard/add-donor",
+    icon: Droplet,
+    roles: ["USER"],
+  },
+  {
     label: "Admin Panel",
     href: "/admin",
     icon: Shield,

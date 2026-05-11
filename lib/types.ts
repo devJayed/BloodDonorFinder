@@ -22,14 +22,18 @@ export interface Donor {
   id: string
   name: string
   fatherName: string
-  motherName: string
-  address: string
+  motherName: string | null
+  profileImage: string | null
+  address: string | null
   mobile: string
-  age: number
+  age: number | null
+  weight: number | null
+  gender: "male" | "female" | "other" | null
   dateOfBirth: string | null
   bloodGroup: BloodGroup | null
   lastDonationDate: string | null
   createdBy: string
+  createdByName?: string
 }
 
 export interface Address {
