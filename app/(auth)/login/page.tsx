@@ -3,7 +3,7 @@
 import { Suspense } from "react"
 import { useState } from "react"
 import { getSession, signIn } from "next-auth/react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Eye, EyeOff, LogIn } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -19,12 +19,27 @@ function getRoleHome(role?: UserRole) {
   return "/dashboard"
 }
 
+function getSafeRedirectUrl(callbackUrl: string | null, roleHome: string) {
+  if (!callbackUrl) return roleHome
+
+  try {
+    const url = new URL(callbackUrl, window.location.origin)
+
+    if (url.origin !== window.location.origin) {
+      return roleHome
+    }
+
+    return `${url.pathname}${url.search}${url.hash}` || roleHome
+  } catch {
+    return roleHome
+  }
+}
+
 function LoginForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
 
@@ -54,9 +69,9 @@ function LoginForm() {
         })
         const session = await getSession()
         const roleHome = getRoleHome(session?.user?.role)
+        const nextUrl = getSafeRedirectUrl(callbackUrl, roleHome)
 
-        router.push(callbackUrl || roleHome)
-        router.refresh()
+        window.location.replace(nextUrl)
       }
     } catch {
       toast({

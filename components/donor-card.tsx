@@ -1,6 +1,5 @@
 "use client"
 
-import { motion } from "framer-motion"
 import { Calendar, MapPin, Phone, User, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -11,10 +10,9 @@ import { useState } from "react"
 
 interface DonorCardProps {
   donor: Donor
-  index: number
 }
 
-export function DonorCard({ donor, index }: DonorCardProps) {
+export function DonorCard({ donor }: DonorCardProps) {
   const [isContactOpen, setIsContactOpen] = useState(false)
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "খুঁজে পাওয়া যায়নি"
@@ -26,20 +24,16 @@ export function DonorCard({ donor, index }: DonorCardProps) {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.1 }}
-    >
-      <Card className="group overflow-hidden rounded-2xl border-border/50 bg-card shadow-md transition-all duration-300 hover:shadow-xl hover:shadow-primary/10">
+    <div>
+      <Card className="group overflow-hidden rounded-2xl border-border/50 bg-card shadow-sm transition-shadow duration-300 sm:shadow-md sm:hover:shadow-xl sm:hover:shadow-primary/10">
         <CardContent className="p-5">
           <div className="mb-4 flex items-start justify-between">
-            <div className="flex items-center gap-3">
+            <div className="min-w-0 flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
                 <User className="h-6 w-6 text-primary" />
               </div>
-              <div>
-                <h3 className="font-semibold text-foreground">{donor.name}</h3>
+              <div className="min-w-0">
+                <h3 className="truncate font-semibold text-foreground">{donor.name}</h3>
                 <p className="text-sm text-muted-foreground">
                   {donor.age ? `${donor.age} years old` : "Age not added"}
                 </p>
@@ -56,19 +50,19 @@ export function DonorCard({ donor, index }: DonorCardProps) {
           </div>
 
           <div className="mb-4 space-y-2">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
               <Users className="h-4 w-4 shrink-0 text-primary/70" />
               <span className="truncate">
                 পিতার নামঃ {donor.fatherName}
               </span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4 shrink-0 text-primary/70" />
               <span className="truncate">{donor.address || "Address not added"}</span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
               <Calendar className="h-4 w-4 shrink-0 text-primary/70" />
-              <span>সর্বশেষ রক্ত দানের তারিখঃ {formatDate(donor.lastDonationDate)}</span>
+              <span className="truncate">সর্বশেষ রক্ত দানের তারিখঃ {formatDate(donor.lastDonationDate)}</span>
             </div>
           </div>
 
@@ -91,6 +85,6 @@ export function DonorCard({ donor, index }: DonorCardProps) {
           />
         </CardContent>
       </Card>
-    </motion.div>
+    </div>
   )
 }

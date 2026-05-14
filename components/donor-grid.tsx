@@ -63,8 +63,8 @@ export function DonorGrid({ donors, isLoading }: DonorGridProps) {
 
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {donors.map((donor, index) => (
-        <DonorCard key={donor.id} donor={donor} index={index} />
+      {donors.map((donor) => (
+        <DonorCard key={donor.id} donor={donor} />
       ))}
     </div>
   )
