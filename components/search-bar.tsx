@@ -20,6 +20,10 @@ interface SearchBarProps {
   setBloodGroup: (value: string) => void
   address: string
   setAddress: (value: string) => void
+  name: string
+  setName: (value: string) => void
+  mobile: string
+  setMobile: (value: string) => void
   onSearch: () => void
 }
 
@@ -28,6 +32,10 @@ export function SearchBar({
   setBloodGroup,
   address,
   setAddress,
+  name,
+  setName,
+  mobile,
+  setMobile,
   onSearch,
 }: SearchBarProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -98,10 +106,16 @@ export function SearchBar({
           Find Blood Donors
         </h2>
         <p className="text-sm text-muted-foreground">
-          Search for donors by blood group and location
+          Search for donors by blood group, location, name, or mobile number
         </p>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault()
+          onSearch()
+        }}
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5"
+      >
         <Select value={bloodGroup} onValueChange={setBloodGroup}>
           <SelectTrigger className="h-12 rounded-xl border-input bg-background text-foreground">
             <SelectValue placeholder="Blood Group" />
@@ -191,14 +205,31 @@ export function SearchBar({
           )}
         </div>
 
+        <input
+          type="text"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          placeholder="Donor name"
+          className="h-12 w-full rounded-xl border border-input bg-background px-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        />
+
+        <input
+          type="tel"
+          inputMode="tel"
+          value={mobile}
+          onChange={(event) => setMobile(event.target.value)}
+          placeholder="Mobile number"
+          className="h-12 w-full rounded-xl border border-input bg-background px-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        />
+
         <Button
-          onClick={onSearch}
-          className="h-12 rounded-xl text-base font-medium"
+          type="submit"
+          className="h-12 rounded-xl text-base font-medium sm:col-span-2 lg:col-span-1"
         >
           <Search className="mr-2 h-4 w-4" />
           Search Donors
         </Button>
-      </div>
+      </form>
     </div>
   )
 }

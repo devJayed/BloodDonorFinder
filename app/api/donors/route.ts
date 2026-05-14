@@ -47,6 +47,8 @@ export async function GET(request: NextRequest) {
     const query = searchParams.get("q")?.trim()
     const bloodGroup = searchParams.get("bloodGroup")
     const address = searchParams.get("address")?.trim()
+    const name = searchParams.get("name")?.trim()
+    const mobile = searchParams.get("mobile")?.trim()
     const filters: Record<string, unknown> = {}
 
     if (bloodGroup && bloodGroup !== "all") {
@@ -55,6 +57,14 @@ export async function GET(request: NextRequest) {
 
     if (address && address !== "all") {
       filters.address = { $regex: escapeRegex(address), $options: "i" }
+    }
+
+    if (name) {
+      filters.name = { $regex: escapeRegex(name), $options: "i" }
+    }
+
+    if (mobile) {
+      filters.mobile = { $regex: escapeRegex(mobile), $options: "i" }
     }
 
     if (query) {

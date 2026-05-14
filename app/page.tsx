@@ -12,8 +12,12 @@ const pageSize = 9
 export default function Home() {
   const [bloodGroup, setBloodGroup] = useState("all")
   const [address, setAddress] = useState("all")
+  const [name, setName] = useState("")
+  const [mobile, setMobile] = useState("")
   const [activeBloodGroup, setActiveBloodGroup] = useState("all")
   const [activeAddress, setActiveAddress] = useState("all")
+  const [activeName, setActiveName] = useState("")
+  const [activeMobile, setActiveMobile] = useState("")
   const [donors, setDonors] = useState<Donor[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
@@ -39,6 +43,14 @@ export default function Home() {
           params.set("address", activeAddress)
         }
 
+        if (hasSearched && activeName.trim()) {
+          params.set("name", activeName.trim())
+        }
+
+        if (hasSearched && activeMobile.trim()) {
+          params.set("mobile", activeMobile.trim())
+        }
+
         const res = await fetch(`/api/donors?${params.toString()}`)
         const data = await res.json()
 
@@ -55,14 +67,23 @@ export default function Home() {
     }
 
     fetchDonors()
-  }, [activeAddress, activeBloodGroup, currentPage, hasSearched])
+  }, [
+    activeAddress,
+    activeBloodGroup,
+    activeMobile,
+    activeName,
+    currentPage,
+    hasSearched,
+  ])
 
   const handleSearch = useCallback(() => {
     setActiveBloodGroup(bloodGroup)
     setActiveAddress(address)
+    setActiveName(name)
+    setActiveMobile(mobile)
     setHasSearched(true)
     setCurrentPage(1)
-  }, [address, bloodGroup])
+  }, [address, bloodGroup, mobile, name])
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page)
@@ -79,7 +100,7 @@ export default function Home() {
           </h1>
           <p className="mx-auto max-w-2xl text-pretty text-muted-foreground">
             Connect with verified blood donors in your area. Every donation can
-            save up to three lives. Search by blood type and location.
+            save up to three lives. Search by blood type, location, name, or mobile number.
           </p>
         </div>
 
@@ -89,6 +110,10 @@ export default function Home() {
             setBloodGroup={setBloodGroup}
             address={address}
             setAddress={setAddress}
+            name={name}
+            setName={setName}
+            mobile={mobile}
+            setMobile={setMobile}
             onSearch={handleSearch}
           />
         </div>
