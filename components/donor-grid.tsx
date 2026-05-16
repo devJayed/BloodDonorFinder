@@ -1,6 +1,5 @@
 "use client"
 
-import { motion } from "framer-motion"
 import { HeartOff } from "lucide-react"
 import { DonorCard } from "@/components/donor-card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -16,7 +15,7 @@ export function DonorGrid({ donors, isLoading }: DonorGridProps) {
     return (
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="rounded-2xl bg-card p-5 shadow-md">
+          <div key={i} className="mobile-stable-card rounded-2xl bg-card p-5 shadow-none sm:shadow-md">
             <div className="mb-4 flex items-start justify-between">
               <div className="flex items-center gap-3">
                 <Skeleton className="h-12 w-12 rounded-xl" />
@@ -43,11 +42,7 @@ export function DonorGrid({ donors, isLoading }: DonorGridProps) {
 
   if (donors.length === 0) {
     return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="flex flex-col items-center justify-center rounded-2xl bg-card py-16 shadow-md"
-      >
+      <div className="mobile-stable-card flex flex-col items-center justify-center rounded-2xl bg-card py-16 shadow-none sm:shadow-md">
         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
           <HeartOff className="h-8 w-8 text-muted-foreground" />
         </div>
@@ -57,7 +52,7 @@ export function DonorGrid({ donors, isLoading }: DonorGridProps) {
         <p className="text-center text-muted-foreground">
           Try adjusting your search filters to find more donors.
         </p>
-      </motion.div>
+      </div>
     )
   }
 

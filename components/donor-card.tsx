@@ -24,12 +24,12 @@ export function DonorCard({ donor }: DonorCardProps) {
   }
 
   return (
-    <div>
-      <Card className="group overflow-hidden rounded-2xl border-border/50 bg-card shadow-sm transition-shadow duration-300 sm:shadow-md sm:hover:shadow-xl sm:hover:shadow-primary/10">
+    <div className="mobile-stable-card">
+      <Card className="group overflow-hidden rounded-2xl border-border/50 bg-card shadow-none sm:shadow-md sm:transition-shadow sm:duration-300 sm:hover:shadow-xl sm:hover:shadow-primary/10">
         <CardContent className="p-5">
           <div className="mb-4 flex items-start justify-between">
             <div className="min-w-0 flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 sm:transition-colors sm:group-hover:bg-primary/20">
                 <User className="h-6 w-6 text-primary" />
               </div>
               <div className="min-w-0">

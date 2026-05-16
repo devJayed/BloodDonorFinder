@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { getToken } from "next-auth/jwt"
+import { getAuthToken } from "@/lib/auth-token"
 
 // Routes that require authentication
 const protectedRoutes = ["/dashboard", "/admin", "/super-admin"]
@@ -12,21 +12,24 @@ const superAdminRoutes = ["/super-admin"]
 // Routes that authenticated users should not access
 const authRoutes = ["/login", "/register"]
 
+function getRoleHome(role?: string) {
+  if (role === "SUPER_ADMIN") return "/super-admin"
+  if (role === "ADMIN") return "/admin"
+  return "/dashboard"
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Get the token (JWT session)
-  const token = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  })
+  const token = await getAuthToken(request)
 
   const isAuthenticated = !!token
   const userRole = token?.role as string | undefined
 
   // Check if trying to access auth pages while logged in
   if (isAuthenticated && authRoutes.some((route) => pathname.startsWith(route))) {
-    return NextResponse.redirect(new URL("/dashboard", request.url))
+    return NextResponse.redirect(new URL(getRoleHome(userRole), request.url))
   }
 
   // Check protected routes

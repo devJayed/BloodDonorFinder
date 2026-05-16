@@ -2,7 +2,7 @@
 
 import { Suspense } from "react"
 import { useState } from "react"
-import { getSession, signIn } from "next-auth/react"
+import { signIn } from "next-auth/react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Eye, EyeOff, LogIn } from "lucide-react"
@@ -11,27 +11,22 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
-import type { UserRole } from "@/lib/types"
 
-function getRoleHome(role?: UserRole) {
-  if (role === "SUPER_ADMIN") return "/super-admin"
-  if (role === "ADMIN") return "/admin"
-  return "/dashboard"
-}
-
-function getSafeRedirectUrl(callbackUrl: string | null, roleHome: string) {
-  if (!callbackUrl) return roleHome
+function getLoginRedirectUrl(callbackUrl: string | null) {
+  const redirectPath = "/auth/redirect"
+  if (!callbackUrl) return redirectPath
 
   try {
     const url = new URL(callbackUrl, window.location.origin)
 
     if (url.origin !== window.location.origin) {
-      return roleHome
+      return redirectPath
     }
 
-    return `${url.pathname}${url.search}${url.hash}` || roleHome
+    const safeCallbackUrl = `${url.pathname}${url.search}${url.hash}`
+    return `${redirectPath}?callbackUrl=${encodeURIComponent(safeCallbackUrl)}`
   } catch {
-    return roleHome
+    return redirectPath
   }
 }
 
@@ -53,6 +48,7 @@ function LoginForm() {
       const result = await signIn("credentials", {
         email,
         password,
+        callbackUrl: getLoginRedirectUrl(callbackUrl),
         redirect: false,
       })
 
@@ -67,11 +63,8 @@ function LoginForm() {
           title: "Login Successful",
           description: "Welcome back!",
         })
-        const session = await getSession()
-        const roleHome = getRoleHome(session?.user?.role)
-        const nextUrl = getSafeRedirectUrl(callbackUrl, roleHome)
 
-        window.location.replace(nextUrl)
+        window.location.assign(getLoginRedirectUrl(callbackUrl))
       }
     } catch {
       toast({
