@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/lib/mongodb"
+import { isEmail, isMobile, normalizeEmail, normalizeMobile } from "@/lib/auth-identifiers"
 import User from "@/models/User"
 import { NextRequest, NextResponse } from "next/server"
 
@@ -6,12 +7,30 @@ import { NextRequest, NextResponse } from "next/server"
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, email, password } = body
+    const { name, email, mobile, password } = body
+    const normalizedEmail =
+      typeof email === "string" && email.trim() ? normalizeEmail(email) : ""
+    const normalizedMobile =
+      typeof mobile === "string" && mobile.trim() ? normalizeMobile(mobile) : ""
 
     // Validate input
-    if (!name || !email || !password) {
+    if (!name || !password || (!normalizedEmail && !normalizedMobile)) {
       return NextResponse.json(
-        { error: "Name, email, and password are required" },
+        { error: "Name, password, and either email or mobile are required" },
+        { status: 400 }
+      )
+    }
+
+    if (normalizedEmail && !isEmail(normalizedEmail)) {
+      return NextResponse.json(
+        { error: "Please enter a valid email address" },
+        { status: 400 }
+      )
+    }
+
+    if (normalizedMobile && !isMobile(normalizedMobile)) {
+      return NextResponse.json(
+        { error: "Please enter a valid mobile number" },
         { status: 400 }
       )
     }
@@ -26,11 +45,16 @@ export async function POST(request: NextRequest) {
     await connectToDatabase()
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email: email.toLowerCase() })
+    const existingUser = await User.findOne({
+      $or: [
+        ...(normalizedEmail ? [{ email: normalizedEmail }] : []),
+        ...(normalizedMobile ? [{ mobile: normalizedMobile }] : []),
+      ],
+    })
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "User with this email already exists" },
+        { error: "User with this email or mobile already exists" },
         { status: 409 }
       )
     }
@@ -38,7 +62,8 @@ export async function POST(request: NextRequest) {
     // Create new user
     const user = await User.create({
       name,
-      email: email.toLowerCase(),
+      ...(normalizedEmail ? { email: normalizedEmail } : {}),
+      ...(normalizedMobile ? { mobile: normalizedMobile } : {}),
       password,
       role: "USER",
     })
@@ -50,6 +75,7 @@ export async function POST(request: NextRequest) {
           id: user._id.toString(),
           name: user.name,
           email: user.email,
+          mobile: user.mobile,
           role: user.role,
         },
       },

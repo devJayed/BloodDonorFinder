@@ -41,7 +41,8 @@ export default function SuperAdminPage() {
     const filtered = users.filter(
       (user) =>
         user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (user.email ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (user.mobile ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.role.toLowerCase().includes(searchQuery.toLowerCase())
     )
     setFilteredUsers(filtered)
@@ -196,7 +197,7 @@ export default function SuperAdminPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
+                    <TableHead>Contact</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead className="hidden md:table-cell">Joined</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -207,7 +208,7 @@ export default function SuperAdminPage() {
                     <TableRow key={user.id}>
                       <TableCell className="font-medium">{user.name}</TableCell>
                       <TableCell className="max-w-[200px] truncate">
-                        {user.email}
+                        {user.email || user.mobile || "Not set"}
                       </TableCell>
                       <TableCell>
                         <Badge

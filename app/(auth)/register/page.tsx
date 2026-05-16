@@ -4,7 +4,7 @@ import { useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Eye, EyeOff, UserPlus } from "lucide-react"
+import { Eye, EyeOff, Mail, UserPlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,10 +14,12 @@ import { useToast } from "@/hooks/use-toast"
 export default function RegisterPage() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
+  const [mobile, setMobile] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
 
@@ -42,13 +44,22 @@ export default function RegisterPage() {
       return
     }
 
+    if (!email.trim() && !mobile.trim()) {
+      toast({
+        title: "Contact Required",
+        description: "Enter an email address or mobile number.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsLoading(true)
 
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, mobile, password }),
       })
 
       const data = await res.json()
@@ -69,7 +80,7 @@ export default function RegisterPage() {
 
       // Auto sign in after registration
       const result = await signIn("credentials", {
-        email,
+        identifier: email || mobile,
         password,
         redirect: false,
       })
@@ -89,6 +100,13 @@ export default function RegisterPage() {
     }
   }
 
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true)
+    await signIn("google", {
+      callbackUrl: "/auth/redirect",
+    })
+  }
+
   return (
     <Card className="w-full max-w-md border-border/50 shadow-lg">
       <CardHeader className="space-y-1 text-center">
@@ -98,6 +116,23 @@ export default function RegisterPage() {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        <Button
+          type="button"
+          variant="outline"
+          className="mb-4 h-11 w-full"
+          disabled={isLoading || isGoogleLoading}
+          onClick={handleGoogleSignIn}
+        >
+          <Mail className="mr-2 h-4 w-4" />
+          {isGoogleLoading ? "Opening Google..." : "Continue with Google"}
+        </Button>
+
+        <div className="mb-4 flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="h-px flex-1 bg-border" />
+          <span>or</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
@@ -121,7 +156,19 @@ export default function RegisterPage() {
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
+              disabled={isLoading}
+              className="h-11"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="mobile">Mobile number</Label>
+            <Input
+              id="mobile"
+              type="tel"
+              placeholder="Enter your mobile number"
+              value={mobile}
+              onChange={(e) => setMobile(e.target.value)}
               disabled={isLoading}
               className="h-11"
             />

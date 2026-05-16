@@ -5,7 +5,7 @@ import { useState } from "react"
 import { signIn } from "next-auth/react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { Eye, EyeOff, LogIn } from "lucide-react"
+import { Eye, EyeOff, LogIn, Mail } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -31,10 +31,11 @@ function getLoginRedirectUrl(callbackUrl: string | null) {
 }
 
 function LoginForm() {
-  const [email, setEmail] = useState("")
+  const [identifier, setIdentifier] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const searchParams = useSearchParams()
   const { toast } = useToast()
 
@@ -46,7 +47,7 @@ function LoginForm() {
 
     try {
       const result = await signIn("credentials", {
-        email,
+        identifier,
         password,
         callbackUrl: getLoginRedirectUrl(callbackUrl),
         redirect: false,
@@ -77,6 +78,13 @@ function LoginForm() {
     }
   }
 
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true)
+    await signIn("google", {
+      callbackUrl: getLoginRedirectUrl(callbackUrl),
+    })
+  }
+
   return (
     <Card className="w-full max-w-md border-border/50 shadow-lg">
       <CardHeader className="space-y-1 text-center">
@@ -86,15 +94,32 @@ function LoginForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        <Button
+          type="button"
+          variant="outline"
+          className="mb-4 h-11 w-full"
+          disabled={isLoading || isGoogleLoading}
+          onClick={handleGoogleSignIn}
+        >
+          <Mail className="mr-2 h-4 w-4" />
+          {isGoogleLoading ? "Opening Google..." : "Continue with Google"}
+        </Button>
+
+        <div className="mb-4 flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="h-px flex-1 bg-border" />
+          <span>or</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="identifier">Email or mobile</Label>
             <Input
-              id="email"
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="identifier"
+              type="text"
+              placeholder="Enter email or mobile number"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               required
               disabled={isLoading}
               className="h-11"
@@ -144,7 +169,16 @@ function LoginForm() {
           </Button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-muted-foreground">
+        <div className="mt-4 text-center text-sm">
+          <Link
+            href="/forgot-password"
+            className="font-medium text-primary hover:underline"
+          >
+            Forgot password?
+          </Link>
+        </div>
+
+        <div className="mt-4 text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
           <Link
             href="/register"

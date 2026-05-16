@@ -1,10 +1,10 @@
-import { Droplet } from "lucide-react"
-import Link from "next/link"
+import { Droplet } from "lucide-react";
+import Link from "next/link";
 
 export default function AuthLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -16,7 +16,7 @@ export default function AuthLayout({
               <Droplet className="h-5 w-5 text-primary-foreground" />
             </div>
             <span className="text-lg font-semibold text-foreground">
-              Blood Donor Finder
+              Blood Bonding
             </span>
           </Link>
         </div>
@@ -27,5 +27,5 @@ export default function AuthLayout({
         {children}
       </main>
     </div>
-  )
+  );
 }

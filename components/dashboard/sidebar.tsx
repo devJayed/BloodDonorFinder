@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useSession, signOut } from "next-auth/react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { useSession, signOut } from "next-auth/react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Droplet,
   Home,
@@ -13,17 +13,18 @@ import {
   LogOut,
   Menu,
   X,
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { useState } from "react"
-import type { UserRole } from "@/lib/types"
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import type { UserRole } from "@/lib/types";
+import Image from "next/image";
 
 interface NavItem {
-  label: string
-  href: string
-  icon: React.ElementType
-  roles?: UserRole[]
+  label: string;
+  href: string;
+  icon: React.ElementType;
+  roles?: UserRole[];
 }
 
 const navItems: NavItem[] = [
@@ -55,24 +56,24 @@ const navItems: NavItem[] = [
     icon: Settings,
     roles: ["SUPER_ADMIN"],
   },
-]
+];
 
 export function DashboardSidebar() {
-  const { data: session } = useSession()
-  const pathname = usePathname()
-  const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const { data: session } = useSession();
+  const pathname = usePathname();
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  const userRole = session?.user?.role as UserRole | undefined
+  const userRole = session?.user?.role as UserRole | undefined;
 
   const filteredNavItems = navItems.filter((item) => {
-    if (!item.roles) return true
-    if (!userRole) return false
-    return item.roles.includes(userRole)
-  })
+    if (!item.roles) return true;
+    if (!userRole) return false;
+    return item.roles.includes(userRole);
+  });
 
   const handleSignOut = () => {
-    signOut({ callbackUrl: "/" })
-  }
+    signOut({ callbackUrl: "/" });
+  };
 
   return (
     <>
@@ -100,15 +101,24 @@ export function DashboardSidebar() {
       <aside
         className={cn(
           "fixed left-0 top-0 z-40 flex h-full w-64 flex-col border-r border-border bg-card transition-transform duration-300 lg:translate-x-0",
-          isMobileOpen ? "translate-x-0" : "-translate-x-full"
+          isMobileOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         {/* Logo */}
         <div className="flex h-16 items-center gap-2 border-b border-border px-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
+          {/* <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
             <Droplet className="h-5 w-5 text-primary-foreground" />
+          </div> */}
+          <div className="flex h-9 w-9 items-center justify-center overflow-hidden">
+            <Image
+              src="/blood-logo-noText.png"
+              alt="Logo"
+              width={36}
+              height={36}
+              className="h-full w-full object-cover"
+            />
           </div>
-          <span className="font-semibold text-foreground">Blood Donor</span>
+          <span className="font-semibold text-foreground">Blood Bonding</span>
         </div>
 
         {/* Navigation */}
@@ -117,7 +127,7 @@ export function DashboardSidebar() {
             {filteredNavItems.map((item) => {
               const isActive =
                 pathname === item.href ||
-                (item.href !== "/dashboard" && pathname.startsWith(item.href))
+                (item.href !== "/dashboard" && pathname.startsWith(item.href));
 
               return (
                 <li key={item.href}>
@@ -128,14 +138,14 @@ export function DashboardSidebar() {
                       "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                       isActive
                         ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                        : "text-muted-foreground hover:bg-secondary hover:text-foreground",
                     )}
                   >
                     <item.icon className="h-4 w-4" />
                     {item.label}
                   </Link>
                 </li>
-              )
+              );
             })}
           </ul>
         </nav>
@@ -166,5 +176,5 @@ export function DashboardSidebar() {
         </div>
       </aside>
     </>
-  )
+  );
 }

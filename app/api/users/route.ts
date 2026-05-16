@@ -29,6 +29,7 @@ export async function GET() {
         id: user._id.toString(),
         name: user.name,
         email: user.email,
+        mobile: user.mobile,
         role: user.role,
         createdAt: user.createdAt.toISOString(),
       })),

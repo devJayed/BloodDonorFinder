@@ -3,7 +3,8 @@ export type UserRole = "SUPER_ADMIN" | "ADMIN" | "USER"
 export interface User {
   id: string
   name: string
-  email: string
+  email?: string
+  mobile?: string
   role: UserRole
   createdAt: string
 }

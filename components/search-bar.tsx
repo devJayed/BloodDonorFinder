@@ -1,30 +1,30 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import { Search, ChevronDown, Check, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState, useRef, useEffect } from "react";
+import { Search, ChevronDown, Check, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { BLOOD_GROUPS } from "@/lib/blood-groups"
-import type { Address } from "@/lib/types"
+} from "@/components/ui/select";
+import { BLOOD_GROUPS } from "@/lib/blood-groups";
+import type { Address } from "@/lib/types";
 
-const fallbackAddresses: Address[] = []
+const fallbackAddresses: Address[] = [];
 
 interface SearchBarProps {
-  bloodGroup: string
-  setBloodGroup: (value: string) => void
-  address: string
-  setAddress: (value: string) => void
-  name: string
-  setName: (value: string) => void
-  mobile: string
-  setMobile: (value: string) => void
-  onSearch: () => void
+  bloodGroup: string;
+  setBloodGroup: (value: string) => void;
+  address: string;
+  setAddress: (value: string) => void;
+  name: string;
+  setName: (value: string) => void;
+  mobile: string;
+  setMobile: (value: string) => void;
+  onSearch: () => void;
 }
 
 export function SearchBar({
@@ -38,32 +38,34 @@ export function SearchBar({
   setMobile,
   onSearch,
 }: SearchBarProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [inputValue, setInputValue] = useState(address === "all" ? "" : address)
-  const [addresses, setAddresses] = useState<Address[]>(fallbackAddresses)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  const [isOpen, setIsOpen] = useState(false);
+  const [inputValue, setInputValue] = useState(
+    address === "all" ? "" : address,
+  );
+  const [addresses, setAddresses] = useState<Address[]>(fallbackAddresses);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const filteredAddresses = addresses.filter((addr) =>
-    addr.label.toLowerCase().includes(inputValue.toLowerCase())
-  )
+    addr.label.toLowerCase().includes(inputValue.toLowerCase()),
+  );
 
   useEffect(() => {
     const fetchAddresses = async () => {
       try {
-        const res = await fetch("/api/addresses")
-        const data = await res.json()
+        const res = await fetch("/api/addresses");
+        const data = await res.json();
 
         if (res.ok) {
-          setAddresses(data.addresses || [])
+          setAddresses(data.addresses || []);
         }
       } catch (error) {
-        console.error("Failed to fetch addresses:", error)
+        console.error("Failed to fetch addresses:", error);
       }
-    }
+    };
 
-    fetchAddresses()
-  }, [])
+    fetchAddresses();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -73,31 +75,31 @@ export function SearchBar({
         inputRef.current &&
         !inputRef.current.contains(event.target as Node)
       ) {
-        setIsOpen(false)
+        setIsOpen(false);
       }
-    }
+    };
 
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleInputChange = (value: string) => {
-    setInputValue(value)
-    setAddress(value || "all")
-    setIsOpen(true)
-  }
+    setInputValue(value);
+    setAddress(value || "all");
+    setIsOpen(true);
+  };
 
   const handleSelectAddress = (addr: string) => {
-    setInputValue(addr)
-    setAddress(addr)
-    setIsOpen(false)
-  }
+    setInputValue(addr);
+    setAddress(addr);
+    setIsOpen(false);
+  };
 
   const handleClear = () => {
-    setInputValue("")
-    setAddress("all")
-    inputRef.current?.focus()
-  }
+    setInputValue("");
+    setAddress("all");
+    inputRef.current?.focus();
+  };
 
   return (
     <div className="w-full rounded-2xl bg-card p-6 shadow-lg shadow-primary/5 ring-1 ring-border/50">
@@ -111,8 +113,8 @@ export function SearchBar({
       </div>
       <form
         onSubmit={(event) => {
-          event.preventDefault()
-          onSearch()
+          event.preventDefault();
+          onSearch();
         }}
         className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5"
       >
@@ -231,5 +233,5 @@ export function SearchBar({
         </Button>
       </form>
     </div>
-  )
+  );
 }

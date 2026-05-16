@@ -1,56 +1,56 @@
-import mongoose from "mongoose"
-// import { seedDatabase } from "./seed"
+import mongoose from "mongoose";
+import { seedDatabase } from "./seed";
 
-const MONGODB_URI = process.env.MONGODB_URI!
+const MONGODB_URI = process.env.MONGODB_URI!;
 
 if (!MONGODB_URI) {
   throw new Error(
-    "Please define the MONGODB_URI environment variable inside .env.local"
-  )
+    "Please define the MONGODB_URI environment variable inside .env.local",
+  );
 }
 
 interface MongooseCache {
-  conn: typeof mongoose | null
-  promise: Promise<typeof mongoose> | null
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
 }
 
 declare global {
-  var mongoose: MongooseCache | undefined
+  var mongoose: MongooseCache | undefined;
 }
 
-const cached: MongooseCache = global.mongoose || { conn: null, promise: null }
+const cached: MongooseCache = global.mongoose || { conn: null, promise: null };
 
 if (!global.mongoose) {
-  global.mongoose = cached
+  global.mongoose = cached;
 }
 
 export async function connectToDatabase() {
   if (cached.conn) {
-    // await seedDatabase()
-    return cached.conn
+    await seedDatabase();
+    return cached.conn;
   }
 
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-    }
+    };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      return mongoose
-    })
+      return mongoose;
+    });
   }
 
   try {
-    cached.conn = await cached.promise
-    
+    cached.conn = await cached.promise;
+
     // Run seeding after successful connection (idempotent - only runs once)
-    // await seedDatabase()
+    await seedDatabase();
   } catch (e) {
-    cached.promise = null
-    throw e
+    cached.promise = null;
+    throw e;
   }
 
-  return cached.conn
+  return cached.conn;
 }
 
-export default connectToDatabase
+export default connectToDatabase;

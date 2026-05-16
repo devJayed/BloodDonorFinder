@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { connectToDatabase } from "@/lib/mongodb"
+import { isEmail, isMobile, normalizeEmail, normalizeMobile } from "@/lib/auth-identifiers"
 import { getAuthSession } from "@/lib/server-permissions"
 import User from "@/models/User"
 
@@ -12,10 +13,12 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { name, email } = await request.json()
+    const { name, email, mobile } = await request.json()
     const normalizedName = typeof name === "string" ? name.trim() : ""
     const normalizedEmail =
-      typeof email === "string" ? email.trim().toLowerCase() : ""
+      typeof email === "string" && email.trim() ? normalizeEmail(email) : ""
+    const normalizedMobile =
+      typeof mobile === "string" && mobile.trim() ? normalizeMobile(mobile) : ""
 
     if (normalizedName.length < 2 || normalizedName.length > 100) {
       return NextResponse.json(
@@ -24,9 +27,23 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
+    if (!normalizedEmail && !normalizedMobile) {
+      return NextResponse.json(
+        { error: "Email or mobile number is required" },
+        { status: 400 }
+      )
+    }
+
+    if (normalizedEmail && !isEmail(normalizedEmail)) {
       return NextResponse.json(
         { error: "Please enter a valid email address" },
+        { status: 400 }
+      )
+    }
+
+    if (normalizedMobile && !isMobile(normalizedMobile)) {
+      return NextResponse.json(
+        { error: "Please enter a valid mobile number" },
         { status: 400 }
       )
     }
@@ -34,13 +51,16 @@ export async function PATCH(request: NextRequest) {
     await connectToDatabase()
 
     const existingUser = await User.findOne({
-      email: normalizedEmail,
+      $or: [
+        ...(normalizedEmail ? [{ email: normalizedEmail }] : []),
+        ...(normalizedMobile ? [{ mobile: normalizedMobile }] : []),
+      ],
       _id: { $ne: session.user.id },
     })
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "Email is already in use" },
+        { error: "Email or mobile is already in use" },
         { status: 409 }
       )
     }
@@ -52,7 +72,16 @@ export async function PATCH(request: NextRequest) {
     }
 
     user.name = normalizedName
-    user.email = normalizedEmail
+    if (normalizedEmail) {
+      user.email = normalizedEmail
+    } else {
+      user.email = undefined
+    }
+    if (normalizedMobile) {
+      user.mobile = normalizedMobile
+    } else {
+      user.mobile = undefined
+    }
     await user.save()
 
     return NextResponse.json({
@@ -61,6 +90,7 @@ export async function PATCH(request: NextRequest) {
         id: user._id.toString(),
         name: user.name,
         email: user.email,
+        mobile: user.mobile,
         role: user.role,
       },
     })

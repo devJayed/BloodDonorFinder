@@ -7,8 +7,9 @@ export type { UserRole }
 export interface IUser extends Document {
   _id: mongoose.Types.ObjectId
   name: string
-  email: string
-  password: string
+  email?: string
+  mobile?: string
+  password?: string
   role: UserRole
   createdAt: Date
   updatedAt: Date
@@ -26,15 +27,21 @@ const UserSchema = new Schema<IUser>(
     },
     email: {
       type: String,
-      required: [true, "Email is required"],
       unique: true,
+      sparse: true,
       lowercase: true,
       trim: true,
       match: [/^\S+@\S+\.\S+$/, "Please enter a valid email"],
     },
+    mobile: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+      match: [/^\+?\d{8,15}$/, "Please enter a valid mobile number"],
+    },
     password: {
       type: String,
-      required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters"],
       select: false,
     },
@@ -51,7 +58,7 @@ const UserSchema = new Schema<IUser>(
 
 // Hash password before saving
 UserSchema.pre("save", async function () {
-  if (!this.isModified("password")) {
+  if (!this.password || !this.isModified("password")) {
     return
   }
 
@@ -63,6 +70,10 @@ UserSchema.pre("save", async function () {
 UserSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {
+  if (!this.password) {
+    return false
+  }
+
   return bcrypt.compare(candidatePassword, this.password)
 }
 
