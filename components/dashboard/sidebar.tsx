@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   Droplet,
   Home,
+  LayoutDashboard,
   Users,
   UserCircle,
   Shield,
@@ -29,9 +30,14 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
+    label: "Home",
+    href: "/",
+    icon: Home,
+  },
+  {
     label: "Dashboard",
     href: "/dashboard",
-    icon: Home,
+    icon: LayoutDashboard,
   },
   {
     label: "My Profile",
@@ -127,7 +133,9 @@ export function DashboardSidebar() {
             {filteredNavItems.map((item) => {
               const isActive =
                 pathname === item.href ||
-                (item.href !== "/dashboard" && pathname.startsWith(item.href));
+                (item.href !== "/" &&
+                  item.href !== "/dashboard" &&
+                  pathname.startsWith(item.href));
 
               return (
                 <li key={item.href}>

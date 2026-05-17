@@ -10,7 +10,7 @@ import type { Donor } from "@/lib/types";
 
 const pageSize = 9;
 
-export default function Home() {
+export default function FindDonorsPage() {
   const [bloodGroup, setBloodGroup] = useState("all");
   const [address, setAddress] = useState("all");
   const [name, setName] = useState("");
@@ -97,11 +97,10 @@ export default function Home() {
       <main className="container mx-auto max-w-6xl px-4 py-8">
         <div className="mb-8 text-center">
           <h1 className="mb-3 text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Find Donors Near You
+            Find Donors
           </h1>
           <p className="mx-auto max-w-2xl text-pretty text-muted-foreground">
-            Connect with verified blood donors in your area. Every donation can
-            save up to three lives. Search by blood type, location, name, or
+            Search available donor records by blood group, location, name, or
             mobile number.
           </p>
         </div>
