@@ -3,13 +3,16 @@
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import {
+  Contact,
   Home,
   Menu,
   Moon,
+  Search,
   Shield,
   Sun,
   User,
   UserCircle,
+  Users,
   LogOut,
   LayoutDashboard,
 } from "lucide-react";
@@ -34,11 +37,18 @@ import Image from "next/image";
 import { canAccessAdmin } from "@/lib/permissions";
 
 const navItems = [
-  { label: "Home", href: "/" },
-  { label: "About Us", href: "/about-us" },
-  { label: "Find Donors", href: "/find-donors" },
-  { label: "Contact", href: "/contact" },
+  { label: "হোম", href: "/" },
+  { label: "আমাদের সম্পর্কে", href: "/about-us" },
+  { label: "ডোনার খুঁজুন", href: "/find-donors" },
+  { label: "যোগাযোগ", href: "/contact" },
 ];
+
+const navIcons = {
+  "/": Home,
+  "/about-us": Users,
+  "/find-donors": Search,
+  "/contact": Contact,
+};
 
 export function Header() {
   const { data: session, status } = useSession();
@@ -74,16 +84,23 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">
-          {navItems.map((item) => (
-            <Button
-              key={item.href}
-              variant="ghost"
-              className="h-9 rounded-lg px-3 text-sm font-medium text-muted-foreground hover:text-foreground"
-              asChild
-            >
-              <Link href={item.href}>{item.label}</Link>
-            </Button>
-          ))}
+          {navItems.map((item) => {
+            const Icon = navIcons[item.href as keyof typeof navIcons];
+
+            return (
+              <Button
+                key={item.href}
+                variant="ghost"
+                className="h-9 rounded-lg px-3 text-sm font-medium text-muted-foreground hover:text-foreground"
+                asChild
+              >
+                <Link href={item.href}>
+                  <Icon className=" h-4 w-4" />
+                  {item.label}
+                </Link>
+              </Button>
+            );
+          })}
         </nav>
 
         <div className="flex items-center gap-3">
@@ -103,16 +120,21 @@ export function Header() {
                 <SheetTitle>Blood Bonding</SheetTitle>
               </SheetHeader>
               <nav className="flex flex-col gap-2 px-4">
-                {navItems.map((item) => (
-                  <SheetClose key={item.href} asChild>
-                    <Link
-                      href={item.href}
-                      className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                    >
-                      {item.label}
-                    </Link>
-                  </SheetClose>
-                ))}
+                {navItems.map((item) => {
+                  const Icon = navIcons[item.href as keyof typeof navIcons];
+
+                  return (
+                    <SheetClose key={item.href} asChild>
+                      <Link
+                        href={item.href}
+                        className="flex items-center rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      >
+                        <Icon className="mr-2 h-4 w-4" />
+                        {item.label}
+                      </Link>
+                    </SheetClose>
+                  );
+                })}
               </nav>
             </SheetContent>
           </Sheet>

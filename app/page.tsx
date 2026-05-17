@@ -95,29 +95,47 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container mx-auto max-w-6xl px-4 py-8">
-        <div className="mb-8 text-center">
-          <h1 className="mb-3 text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Find Donors Near You
-          </h1>
-          <p className="mx-auto max-w-2xl text-pretty text-muted-foreground">
-            Connect with verified blood donors in your area. Every donation can
-            save up to three lives. Search by blood type, location, name, or
-            mobile number.
-          </p>
-        </div>
+        {/* Adding banner background image below div  */}
+        <div className="relative isolate z-20 mb-8 rounded-2xl px-4 py-12 shadow-sm">
+          <div
+            className="absolute inset-0 -z-10 overflow-hidden rounded-2xl"
+            aria-hidden="true"
+          >
+            <div
+              className="absolute inset-0 scale-105 bg-cover bg-center bg-no-repeat"
+              style={{
+                backgroundImage: "url('/banner_background.png')",
+              }}
+            />
+            <div className="absolute inset-0 bg-black/45" />
+          </div>
+          {/* content  */}
+          <div className="relative z-10 mb-8 text-center">
+            <h1 className="mb-3 text-balance text-3xl font-bold tracking-tight text-white drop-shadow-md sm:text-4xl">
+              আপনার নিকটস্থ রক্তদাতা (ডোনার) খুঁজুন
+            </h1>
+            <p className="mx-auto max-w-2xl rounded-xl bg-black/10 px-4 py-3 text-pretty text-white/90 shadow-lg backdrop-blur-sm">
+              চাঁদপুর জেলা কচুয়া উপজেলা খাজুরিয়া ইউনিয়নের লক্ষীপুর এলাকার
+              আশেপাশে যাচাইকৃত রক্তদাতাদের সাথে সহজেই সংযুক্ত হোন। <br />
+              প্রতিটি রক্তদান সর্বোচ্চ তিনটি জীবন বাঁচাতে পারে। <br />
+              রক্তের গ্রুপ, অবস্থান, নাম অথবা মোবাইল নম্বর দিয়ে দ্রুত রক্তদাতা
+              খুঁজুন।
+            </p>
+          </div>
 
-        <div className="mb-8">
-          <SearchBar
-            bloodGroup={bloodGroup}
-            setBloodGroup={setBloodGroup}
-            address={address}
-            setAddress={setAddress}
-            name={name}
-            setName={setName}
-            mobile={mobile}
-            setMobile={setMobile}
-            onSearch={handleSearch}
-          />
+          <div className="relative z-30 mb-8">
+            <SearchBar
+              bloodGroup={bloodGroup}
+              setBloodGroup={setBloodGroup}
+              address={address}
+              setAddress={setAddress}
+              name={name}
+              setName={setName}
+              mobile={mobile}
+              setMobile={setMobile}
+              onSearch={handleSearch}
+            />
+          </div>
         </div>
 
         <div className="mb-6 flex items-center justify-between">
